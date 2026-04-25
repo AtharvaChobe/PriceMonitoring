@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+
+  eureka:
+    build: ./EurekaServer/EurekaServer
+    container_name: eureka
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./ApiGateway/ApiGateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      REACT_URL: ${REACT_URL}
+
+  user-service:
+    build: ./UserService/UserService
+    container_name: user-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka
+    environment:
+      MYSQLHOST: ${MYSQLHOST}
+      MYSQLPORT: ${MYSQLPORT}
+      MYSQLDATABASE: "user_db"
+      MYSQLUSER: ${MYSQLUSER}
+      MYSQLPASSWORD: ${MYSQLPASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+
+  alert-service:
+    build: ./AlertService/AlertService
+    container_name: alert-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka
+    environment:
+      MYSQLHOST: ${MYSQLHOST}
+      MYSQLPORT: ${MYSQLPORT}
+      MYSQLDATABASE: "alert_db"
+      MYSQLUSER: ${MYSQLUSER}
+      MYSQLPASSWORD: ${MYSQLPASSWORD}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+
+  data-service:
+    build: ./DataService/DataService
+    container_name: data-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      API_KEY: ${API_KEY}
